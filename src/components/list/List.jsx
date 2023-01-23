@@ -1,47 +1,52 @@
-import { ArrowBackIosOutlined, ArrowForwardIosOutlined } from "@material-ui/icons"
-import { useRef } from "react"
-import { useState } from "react"
-import ListItem from "../listitem/ListItem"
+import axios from "../../axios"
+import { useEffect, useState } from "react"
+import Youtube from "react-youtube"
+import { API_KEY, imageUrl } from "../../constants/constants"
 import "./List.scss"
+import YouTube from "react-youtube"
 
-export default function List() {
-    const [isMoved, setIsMoved] = useState(false)
-    const [slideNumber, setSlideNumber] = useState(0)
+export default function List(props) {
+    const [movies, setMovies] = useState([])
+    const [urlId,setUrlId] = useState('')
 
-    const listRef = useRef()
+    useEffect(() => {
+      axios.get(props.url).then(response=>{
+        console.log(response.data);
+        setMovies(response.data.results)
+      })
+    
+    }, [])
+    const opts = {
+        height: '500',
+        width: '100%',
+        playerVars: {
+          // https://developers.google.com/youtube/player_parameters
+          autoplay: 1,
+        },
+      };
 
-    const handleClick = (direction) =>{
-        setIsMoved(true)
-        let distance = listRef.current.getBoundingClientRect().x - 50
-        if(direction === "left" && slideNumber > 0){
-            setSlideNumber(slideNumber - 1);
-            listRef.current.style.transform = `translateX(${230 + distance}px)`
-        }
-        if(direction === "right" && slideNumber <5){
-            setSlideNumber(slideNumber +   1)
-            listRef.current.style.transform = `translateX(${-230 + distance}px)`
-        }
-    }
-  return (
-    <div className="list">
-        <span className="listTitle">Continue To Watch</span>
-        <div className="wrapper">
-            <ArrowBackIosOutlined className="sliderArrow left" onClick={()=>handleClick("left")} style={{display: !isMoved && "none"}} />
-            <div className="container" ref={listRef}>
-                <ListItem index={0} />
-                <ListItem index={1}/>
-                <ListItem index={2}/>
-                <ListItem index={3}/>
-                <ListItem index={4}/>
-                <ListItem index={5}/>
-                <ListItem index={6}/>
-                <ListItem index={7}/>
-                <ListItem index={8}/>
-                <ListItem index={9}/>
-                
+      const handleMovie = (id)=>{
+        console.log(id)
+        axios.get(`/movie/${id}/videos?api_key=${API_KEY}&language=en-US`).then(response=>{
+            if(response.data.results.length!=0){
+                setUrlId(response.data.results[0])
+            }else{
+                console.log('Array empty');
+            }
+        })
+      }
+     
+    return (
+        <div className="row">
+            <h2>{props.title}</h2>
+            <div className="posters">
+                {movies.map((obj)=>
+                    <img onClick={()=>handleMovie(obj.id)} className={props.isSmall ? 'smallPoster' :"poster"} src={`${imageUrl+obj.poster_path}`} alt="" />
+                )}
             </div>
-            <ArrowForwardIosOutlined className="sliderArrow right" onClick={()=>handleClick("right")} />
+            { urlId && <Youtube opts={opts} videoId={urlId.key} />}
         </div>
-    </div>
-  )
-}
+
+        )
+      }
+   

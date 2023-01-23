@@ -1,7 +1,19 @@
-import { InfoOutlined, PlayArrow } from "@material-ui/icons"
+import { API_KEY, imageUrl } from '../../constants/constants'
+import { useEffect, useState } from "react"
+import axios from '../../axios'
 import "./Featured.scss"
 
 export default function Featured({type}) {
+  const [movie, setMovie] = useState()
+  useEffect(() => {
+    axios.get(
+      `/trending/all/day?api_key=${API_KEY}`).then((response)=>{
+        console.log(response.data);
+        setMovie(response.data.results[2])
+      })
+  
+  }, [])
+  
   return (
     <div className="featured">
         {type && (
@@ -21,20 +33,20 @@ export default function Featured({type}) {
             </select>
             </div>
         )}
-               <img  src="https://cdn.mos.cms.futurecdn.net/cjtEjEGEgk2UTKxrrU2tih-1200-80.jpg" alt="" />
+               <img  src={movie ? imageUrl+movie.backdrop_path :""} />
                <div className="info">
-                 <img src="https://cdn1.ftimg.com/images/logos/big/en_US/matrix-logo.png" alt="" />
+                 <h1 className="title">{movie ? movie.title : ""}</h1>
                  <span className="desc">
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit. Modi nisi laboriosam tenetur provident necessitatibus eaque veritatis eveniet impedit odio vero, deleniti sit, ea fuga earum assumenda sequi alias, distinctio iusto.
+                    {movie ? movie.overview : ""}
                  </span>
                  <div className="buttons">
                 <button className="play">
-                    <PlayArrow/>
+                    
                     <span>Play</span>
                 </button>
                 <button className="more">
-                    <InfoOutlined />
-                    <span>Info</span>
+                   
+                    <span>My List</span>
                 </button>
                  </div>
                </div>
